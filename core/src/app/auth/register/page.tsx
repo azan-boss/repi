@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,16 +10,18 @@ import { Label } from "@/components/ui/label"
 import { User, Mail, Lock, Loader2 } from 'lucide-react'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/config/firebase'
+import { useToast } from '@/hooks/use-toast'
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isError, setIsError] = useState(false)
+  const { toast } = useToast()
   
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    const router=useRouter()
     e.preventDefault()
     setIsLoading(true)
     // Simulate API call
@@ -28,12 +30,17 @@ export default function RegisterPage() {
     try {
       const user= await createUserWithEmailAndPassword(auth,email,password)
       console.log("user created with id",user.user);
-      router.push("")
+      toast({ title: "Login Successfully ",
+        description: "You have been logined",})
+      setIsError(true)
+      router.push("/")
       setIsLoading(false)
       
     } catch (error) {
       console.log("some error occurs");
       setIsLoading(false)
+      toast({ title: "User already exists",
+        description: "this email already taken",})
       setIsError(true)
       
       
