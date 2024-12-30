@@ -19,7 +19,10 @@ const Header = () => {
             transition={{ duration: 0.5, staggerChildren: 0.1 }}
             className="flex space-x-6"
           >
-            {['Courses', 'About', 'Contact'].map((item) => (
+            <motion.li whileHover={{ scale: 1.1 }}>
+              <Link href="/courses" className="hover:text-gray-200">Courses</Link>
+            </motion.li>
+            {['About', 'Contact'].map((item) => (
               <motion.li key={item} whileHover={{ scale: 1.1 }}>
                 <Link href={`/${item.toLowerCase()}`} className="hover:text-gray-200">{item}</Link>
               </motion.li>
