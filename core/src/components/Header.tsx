@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 const Header = () => {
+  const [isAuthenticated,setIsAuthenticated]=useState(false)
+  const routs=['About', 'Contact']
   return (
     <header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -22,7 +25,8 @@ const Header = () => {
             <motion.li whileHover={{ scale: 1.1 }}>
               <Link href="/courses" className="hover:text-gray-200">Courses</Link>
             </motion.li>
-            {['About', 'Contact'].map((item) => (
+            {isAuthenticated?routs.push("Dashboard"):routs.push("login")}
+            {routs.map((item) => (
               <motion.li key={item} whileHover={{ scale: 1.1 }}>
                 <Link href={`/${item.toLowerCase()}`} className="hover:text-gray-200">{item}</Link>
               </motion.li>
