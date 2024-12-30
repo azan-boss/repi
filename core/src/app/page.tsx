@@ -6,6 +6,9 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import SaleAlert from '../components/SaleAlert'
 import CourseCard from '../components/CourseCard'
+import {auth} from "@/config/firebase"
+import { useEffect } from 'react'
+import { onAuthStateChanged } from "firebase/auth";
 
 const courses = [
   { title: 'Web Development Bootcamp', description: 'Learn full-stack web development from scratch', price: 199, discountedPrice: 99, ribbon: 'Bestseller', slug: 'web-development-bootcamp' },
@@ -16,7 +19,21 @@ const courses = [
   { title: 'Graphic Design Essentials', description: 'Master the fundamentals of graphic design', price: 159, discountedPrice: 79, slug: 'graphic-design-essentials' },
 ]
 
+
+
+
+
 export default function Home() {
+  useEffect(()=>{
+      const unsubcribe = onAuthStateChanged(auth,(user)=>{
+        if(user){
+          console.log(user.email)
+          console.log(user.uid)
+        }
+  
+      })
+   return ()=>unsubcribe()
+  },[])
   return (
     <div className="flex flex-col min-h-screen">
       <SaleAlert />

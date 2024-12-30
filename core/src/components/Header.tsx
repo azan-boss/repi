@@ -1,10 +1,26 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/config/firebase";
+ import { useEffect } from 'react'
+
+
 
 const Header = () => {
   const [isAuthenticated,setIsAuthenticated]=useState(false)
   const routs=['About', 'Contact']
+  useEffect(()=>{
+    const unsubcribe=onAuthStateChanged(auth,(user)=>{
+      if (user) {
+        console.log(user.email);
+        setIsAuthenticated(true)
+      }
+    })
+
+
+    return ()=>unsubcribe()
+  },[])
   return (
     <header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">

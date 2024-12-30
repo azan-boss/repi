@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -143,4 +142,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-
