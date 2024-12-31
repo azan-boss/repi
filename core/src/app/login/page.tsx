@@ -7,16 +7,35 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Mail, Lock, Loader2 } from 'lucide-react'
-
+import { useRouter } from 'next/navigation'
+import {signInWithEmailAndPassword } from "firebase/auth"
+import { useToast } from '@/hooks/use-toast'
+import {auth} from "@/config/firebase"
 export default function LoginPage() {
+  const router=useRouter()
   const [isLoading, setIsLoading] = useState(false)
-
+  const [email,setEmail]=useState('')
+  const [password,setPassword]=useState('')
+  const { toast } = useToast()
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsLoading(false)
+    try{
+      const user=await signInWithEmailAndPassword (auth,email,password)
+      console.log(user.email) 
+      setIsLoading(false)
+      toast({title:"Login successfully"})
+      router.push("/")
+    }
+    catch(error){
+      setIsLoading(false)
+      console.log(error);
+
+      toast({title:"Login failed"})
+      
+
+    }
   }
 
   return (
@@ -45,6 +64,8 @@ export default function LoginPage() {
               type="email"
               placeholder="Enter your email"
               required
+              value={email}
+              onChange={e=>{setEmail(e.target.value)}}
               className="pl-10"
             />
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -58,6 +79,8 @@ export default function LoginPage() {
               type="password"
               placeholder="Enter your password"
               required
+              value={password}
+              onChange={e=>{setPassword(e.target.value)}}
               className="pl-10"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
