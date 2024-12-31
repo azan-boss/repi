@@ -9,49 +9,39 @@ import CourseContent from '@/components/CourseContent'
 import { useParams } from 'next/navigation'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/config/firebase'
+import Loader from '@/components/loader'
+
 // Mock data for the course
-const courseData = {
-  title: 'Web Development Bootcamp',
-  description: 'Learn full-stack web development from scratch with this comprehensive bootcamp. Master HTML, CSS, JavaScript, React, Node.js, and more!',
-  instructor: 'John Doe',
-  rating: 4.8,
-  students: 10000,
-  price: 199,
-  discountedPrice: 99,
-  modules: [
-    {
-      title: 'Module 1: HTML & CSS Fundamentals',
-      lessons: ['Introduction to HTML', 'CSS Basics', 'Responsive Design', 'Flexbox and Grid'],
-    },
-    {
-      title: 'Module 2: JavaScript Essentials',
-      lessons: ['JavaScript Basics', 'DOM Manipulation', 'ES6+ Features', 'Asynchronous JavaScript'],
-    },
-    {
-      title: 'Module 3: React Fundamentals',
-      lessons: ['Introduction to React', 'Components and Props', 'State and Lifecycle', 'Hooks'],
-    },
-    {
-      title: 'Module 4: Backend Development with Node.js',
-      lessons: ['Node.js Basics', 'Express.js', 'RESTful APIs', 'Database Integration'],
-    },
-  ],
-}
+
 
 export default function CoursePage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
+  const [courseData, setCourse] = useState({})
+  const [loading, setLoading] = useState(false)
   const { slug } = useParams()
   useEffect(() => {
+    
     // Fetch course data based on the slug
          async function getCourse(){
+          setLoading(true)
             const course=await getDoc(doc(db, 'courses', slug))
-            console.log(course.data())
+           
+            setCourse(course.data)
+            setLoading(false)
             
         }
-
+        console.log(courseData);
+        
 
         getCourse()
   },[])
+
+
+  if (loading){
+    return (
+      <Loader />
+    )
+  }
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -78,20 +68,20 @@ export default function CoursePage() {
               <div className="flex items-center mb-6">
                 <Image
                   src="/placeholder.svg?height=50&width=50"
-                  alt={courseData.instructor}
+                  alt="Jhon Doe"
                   width={50}
                   height={50}
                   className="rounded-full mr-4"
                 />
                 <div>
-                  <p className="font-semibold">{courseData.instructor}</p>
+                  <p className="font-semibold">Jhon Doe</p>
                   <p className="text-sm text-gray-600">Instructor</p>
                 </div>
               </div>
               <div className="flex items-center mb-6">
-                <span className="text-yellow-500 mr-2">★★★★☆</span>
-                <span className="font-semibold">{courseData.rating}</span>
-                <span className="text-gray-600 ml-2">({courseData.students.toLocaleString()} students)</span>
+                <span className="text-yellow-500 mr-2">★☆</span>
+                <span className="font-semibold">4.2</span>
+                <span className="text-gray-600 ml-2">student</span>
               </div>
               <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -120,7 +110,7 @@ export default function CoursePage() {
                   className="w-full rounded-lg mb-4"
                 />
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">${courseData.discountedPrice}</span>
+                  <span className="text-3xl font-bold">${courseData.priceDiscount}</span>
                   <span className="text-gray-500 line-through ml-2">${courseData.price}</span>
                 </div>
                 <motion.button
