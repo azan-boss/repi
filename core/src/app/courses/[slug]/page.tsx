@@ -79,7 +79,17 @@ export default function CoursePage() {
                 <span className="font-semibold">{courseData.rating}</span>
                 <span className="text-gray-600 ml-2">({courseData.students.toLocaleString()} students)</span>
               </div>
-              <CourseContent modules={courseData.modules} />
+              <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsEnrolled(!isEnrolled)}
+                  className={`w-full py-6 rounded-full font-semibold text-white ${
+                    isEnrolled ? 'bg-green-600' : 'bg-purple-600'
+                  }`}
+                >
+                  {isEnrolled ? 'Enrolled' : 'Enroll Now'}
+                </motion.button>
+             
             </div>
             <div>
               <motion.div

@@ -4,20 +4,46 @@ import { motion } from 'framer-motion'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import CourseCard from '../../components/CourseCard'
+import { getDocs, collection } from 'firebase/firestore'
+import { db } from '@/config/firebase'
+import { useEffect, useState } from 'react'
+import Loader from '@/components/loader'
 
-const courses = [
-  { title: 'Web Development Bootcamp', description: 'Learn full-stack web development from scratch', price: 199, discountedPrice: 99, ribbon: 'Bestseller', slug: 'web-development-bootcamp' },
-  { title: 'Data Science Fundamentals', description: 'Master the basics of data science and analytics', price: 149, discountedPrice: 74, slug: 'data-science-fundamentals' },
-  { title: 'Mobile App Development', description: 'Create iOS and Android apps with React Native', price: 179, discountedPrice: 89, ribbon: 'New', slug: 'mobile-app-development' },
-  { title: 'Machine Learning A-Z', description: 'Comprehensive machine learning course for beginners', price: 199, discountedPrice: 99, slug: 'machine-learning-a-z' },
-  { title: 'Digital Marketing Mastery', description: 'Learn to grow your business with digital marketing', price: 129, discountedPrice: 64, slug: 'digital-marketing-mastery' },
-  { title: 'Graphic Design Essentials', description: 'Master the fundamentals of graphic design', price: 159, discountedPrice: 79, slug: 'graphic-design-essentials' },
-  { title: 'Python for Beginners', description: 'Start your programming journey with Python', price: 129, discountedPrice: 64, slug: 'python-for-beginners' },
-  { title: 'Advanced JavaScript', description: 'Take your JavaScript skills to the next level', price: 179, discountedPrice: 89, slug: 'advanced-javascript' },
-  { title: 'UX/UI Design Principles', description: 'Learn to create user-friendly and attractive interfaces', price: 149, discountedPrice: 74, slug: 'ux-ui-design-principles' },
-]
+type Course = {
+  title: string
+  description: string
+  price: number
+  priceDiscount: number
+  ribbon?: string
+}
 
 export default function CoursesPage() {
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'courses'))
+        const fetchedCourses: Course[] = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+           // Optional: Include the document ID
+        } as Course))
+        setCourses(fetchedCourses)
+      } catch (error) {
+        console.error('Error fetching courses:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+  if (loading) {
+    return <Loader />
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -47,7 +73,7 @@ export default function CoursesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course, index) => (
                 <motion.div
-                  key={course.slug}
+                  key={index}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -63,4 +89,3 @@ export default function CoursesPage() {
     </div>
   )
 }
-

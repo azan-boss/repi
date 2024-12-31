@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-
+import Link from 'next/link'
 interface CourseCardProps {
   title: string
   description: string
@@ -8,7 +8,7 @@ interface CourseCardProps {
   ribbon?: string
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ title, description, price, discountedPrice, ribbon }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ title, description, price, priceDiscount, ribbon }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -25,14 +25,18 @@ const CourseCard: React.FC<CourseCardProps> = ({ title, description, price, disc
         <div className="flex justify-between items-center">
           <div>
             <span className="text-gray-400 line-through">${price}</span>
-            <span className="text-2xl font-bold text-green-600 ml-2">${discountedPrice}</span>
+            <span className="text-2xl font-bold text-green-600 ml-2">${priceDiscount}</span>
           </div>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="bg-purple-600 text-white px-4 py-2 rounded-full"
-          >
-            Enroll Now
+
+>
+  <Link href={`/courses/${title}`}>
+  Enroll Now
+  </Link>
+  
           </motion.button>
         </div>
       </div>
