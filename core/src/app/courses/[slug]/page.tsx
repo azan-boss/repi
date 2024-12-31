@@ -45,7 +45,8 @@ export default function CoursePage() {
     // Fetch course data based on the slug
          async function getCourse(){
             const course=await getDoc(doc(db, 'courses', slug))
-            console.log(course.id)
+            console.log(course.data())
+            
         }
 
 
