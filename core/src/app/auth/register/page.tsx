@@ -34,11 +34,13 @@ export default function RegisterPage() {
       await updateProfile(user, { displayName: fullName })
 
       // Save additional user data to Firestore
-      await addDoc(collection(db, "mesi"), {
+      await addDoc(collection(db, "identifier"), {
         uid: user.uid,
         email: user.email,
         fullName,
-        role:"student"
+        role:"student",
+        createdAt: new Date(),
+        courses: []
       })
 
       // Display success messages
