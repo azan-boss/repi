@@ -23,7 +23,7 @@ export default function LoginPage() {
     // Simulate API call
     try{
       const user=await signInWithEmailAndPassword (auth,email,password)
-      console.log(user.email) 
+      console.log(user.user) 
       setIsLoading(false)
       toast({title:"Login successfully"})
       router.push("/")
