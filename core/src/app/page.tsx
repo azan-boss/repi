@@ -1,39 +1,62 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import SaleAlert from '../components/SaleAlert'
-import CourseCard from '../components/CourseCard'
-import {auth} from "@/config/firebase"
-import { useEffect } from 'react'
-import { onAuthStateChanged } from "firebase/auth";
-
-const courses = [
-  { title: 'Web Development Bootcamp', description: 'Learn full-stack web development from scratch', price: 199, discountedPrice: 99, ribbon: 'Bestseller', slug: 'web-development-bootcamp' },
-  { title: 'Data Science Fundamentals', description: 'Master the basics of data science and analytics', price: 149, discountedPrice: 74, slug: 'data-science-fundamentals' },
-  { title: 'Mobile App Development', description: 'Create iOS and Android apps with React Native', price: 179, discountedPrice: 89, ribbon: 'New', slug: 'mobile-app-development' },
-  { title: 'Machine Learning A-Z', description: 'Comprehensive machine learning course for beginners', price: 199, discountedPrice: 99, slug: 'machine-learning-a-z' },
-  { title: 'Digital Marketing Mastery', description: 'Learn to grow your business with digital marketing', price: 129, discountedPrice: 64, slug: 'digital-marketing-mastery' },
-  { title: 'Graphic Design Essentials', description: 'Master the fundamentals of graphic design', price: 159, discountedPrice: 79, slug: 'graphic-design-essentials' },
-]
-
-
-
-
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import SaleAlert from '../components/SaleAlert';
+import CourseCard from '../components/CourseCard';
+import { db } from '@/config/firebase';
+import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import Loader from '@/components/loader';
+type Course = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  discountedPrice: number;
+  ribbon?: string;
+};
 
 export default function Home() {
-  useEffect(()=>{
-      const unsubcribe = onAuthStateChanged(auth,(user)=>{
-        if(user){
-          console.log(user.email)
-          console.log(user.uid)
-        }
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading,setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function getCourses() {
+      setIsLoading(true);
+      try {
+        const courseDocs = await getDocs(collection(db, 'courses'));
+        const fetchedCourses: Course[] = courseDocs.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || 'Untitled Course', // Fallback if title is missing
+            description: data.description || 'No description available',
+            price: Number(data.price) || 0, // Ensure price is a number
+            discountedPrice: Number(data.discountedPrice || data.priceDiscount) || 0, // Handle `priceDiscount` fallback
+            ribbon: data.ribbon || undefined, // Optional ribbon field
+          };
+        });
+        setCourses(fetchedCourses);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
   
-      })
-   return ()=>unsubcribe()
-  },[])
+    getCourses();
+  }, []);
+  
+  if (isLoading){
+      return(
+        <Loader/>
+      )
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <SaleAlert />
@@ -80,7 +103,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course, index) => (
                 <motion.div
-                  key={course.title}
+                  key={course.id} // Fixed key usage
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -105,6 +128,5 @@ export default function Home() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
-

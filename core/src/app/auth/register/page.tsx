@@ -34,7 +34,7 @@ export default function RegisterPage() {
       await updateProfile(user, { displayName: fullName })
 
       // Save additional user data to Firestore
-      await addDoc(collection(db, "users"), {
+      await addDoc(collection(db, "mesi"), {
         uid: user.uid,
         email: user.email,
         fullName,
@@ -52,7 +52,7 @@ export default function RegisterPage() {
       console.error("Error during registration:", error)
       toast({
         title: "Registration Failed",
-        description: error.message || "An error occurred while creating your account.",
+        description: error?.message || "An error occurred while creating your account.",
       })
     } finally {
       setIsLoading(false)
