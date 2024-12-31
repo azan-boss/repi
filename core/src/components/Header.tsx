@@ -13,7 +13,7 @@ const Header = () => {
   useEffect(()=>{
     const unsubcribe=onAuthStateChanged(auth,(user)=>{
       if (user) {
-        console.log(user.email);
+        console.log(user.uid);
         setIsAuthenticated(true)
       }
     })
