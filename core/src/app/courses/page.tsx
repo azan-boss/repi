@@ -26,9 +26,10 @@ export default function CoursesPage() {
       try {
         const querySnapshot = await getDocs(collection(db, 'courses'))
         const fetchedCourses: Course[] = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
+          id:doc.id,
+          ...(doc.data() as Course[]),
            // Optional: Include the document ID
-        } as Course))
+        } ))
         setCourses(fetchedCourses)
       } catch (error) {
         console.error('Error fetching courses:', error)

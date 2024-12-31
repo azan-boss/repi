@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Header from '../../../components/Header'
 import Footer from '../../../components/Footer'
 import CourseContent from '@/components/CourseContent'
+import { useParams } from 'next/navigation'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '@/config/firebase'
 // Mock data for the course
 const courseData = {
   title: 'Web Development Bootcamp',
@@ -37,7 +40,17 @@ const courseData = {
 
 export default function CoursePage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
+  const { slug } = useParams()
+  useEffect(() => {
+    // Fetch course data based on the slug
+         async function getCourse(){
+            const course=await getDoc(doc(db, 'courses', slug))
+            console.log(course.id)
+        }
 
+
+        getCourse()
+  },[])
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

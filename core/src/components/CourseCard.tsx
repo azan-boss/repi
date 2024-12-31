@@ -8,7 +8,7 @@ interface CourseCardProps {
   ribbon?: string
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ title, description, price, priceDiscount, ribbon }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ id,title, description, price, priceDiscount, ribbon }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -33,7 +33,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ title, description, price, pric
             className="bg-purple-600 text-white px-4 py-2 rounded-full"
 
 >
-  <Link href={`/courses/${title}`}>
+  <Link href={`/courses/${id}`}>
   Enroll Now
   </Link>
   
