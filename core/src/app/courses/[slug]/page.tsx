@@ -1,90 +1,133 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import Image from 'next/image'
-import Header from '../../../components/Header'
-import Footer from '../../../components/Footer'
-import { useParams } from 'next/navigation'
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
-import { auth, db } from '@/config/firebase'
-import Loader from '@/components/loader'
-import { onAuthStateChanged } from 'firebase/auth'
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
+import { useParams } from 'next/navigation';
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
+import Loader from '@/components/loader';
+import { onAuthStateChanged } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 // Define a type for course data
 type CourseData = {
-  title: string
-  description: string
-  image?: string
-  instructorName?: string
-  instructorImage?: string
-  rating?: number
-  students?: number
-  price: number
-  priceDiscount: number
-}
+  title: string;
+  description: string;
+  image?: string;
+  instructorName?: string;
+  instructorImage?: string;
+  rating?: number;
+  students?: number;
+  price: number;
+  priceDiscount: number;
+};
 
 export default function CoursePage() {
-  const [isEnrolled, setIsEnrolled] = useState(false)
-  const [courseData, setCourseData] = useState<CourseData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const { slug } = useParams()
+  const {toast} = useToast();
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { slug } = useParams();
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        setLoading(true)
-        const courseRef = doc(db, 'courses', slug)
-        const courseSnap = await getDoc(courseRef)
+        setLoading(true);
+        const courseRef = doc(db, 'courses', slug);
+        const courseSnap = await getDoc(courseRef);
         if (courseSnap.exists()) {
-          setCourseData(courseSnap.data() as CourseData)
+          setCourseData(courseSnap.data() as CourseData);
         } else {
-          console.error('Course not found')
+          console.error('Course not found');
         }
       } catch (error) {
-        console.error('Error fetching course data:', error)
+        console.error('Error fetching course data:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     const getUserDetails = () => {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           try {
-            const email=user.email
-            const userDetailDoc = await getDocs(collection(db, 'identifier'))
-            userDetailDoc.docs.forEach((doc) => {
-             if(doc.data().email==email){
-              if(doc.data().courses.includes(parseInt(slug))){
-                setIsEnrolled(true)
-              }
-              else{
-                setIsEnrolled(false)
-             }}
-            })
+            const email = user.email;
+            const userQuery = query(
+              collection(db, 'identifier'),
+              where('email', '==', email)
+            );
+            const querySnapshot = await getDocs(userQuery);
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0];
+              const courses = userDoc.data().courses || [];
+              setIsEnrolled(courses.includes(slug));
+            }
           } catch (error) {
-            console.error('Error fetching user details:', error)
+            console.error('Error fetching user details:', error);
           }
         }
-      })
-      return unsubscribe
-    }
+      });
+      return unsubscribe;
+    };
 
     if (slug) {
-      fetchCourse()
-      const unsubscribe = getUserDetails()
-      return () => unsubscribe() // Clean up the listener on component unmount
+      fetchCourse();
+      const unsubscribe = getUserDetails();
+      return () => unsubscribe(); // Clean up the listener on component unmount
     }
-  }, [slug])
+  }, [slug]);
 
   if (loading) {
-    return <Loader />
+    return <Loader />;
   }
 
   if (!courseData) {
-    return <div className="text-center py-20">Course not found.</div>
+    return <div className="text-center py-20">Course not found.</div>;
   }
+
+  const handleEnroll = async () => {
+    if (!auth.currentUser) {
+      toast({ title: 'Error', description: 'You must be logged in to enroll.' });
+      return;
+    }
+
+    const email = auth.currentUser.email;
+    try {
+      const userQuery = query(
+        collection(db, 'identifier'),
+        where('email', '==', email)
+      );
+      const querySnapshot = await getDocs(userQuery);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const courses = userDoc.data().courses || [];
+
+        if (courses.includes(slug)) {
+          toast({ title: 'Info', description: 'You are already enrolled in this course.' });
+        } else {
+          await updateDoc(userDoc.ref, { courses: arrayUnion(slug) });
+          toast({ title: 'Success', description: 'You have successfully enrolled in the course.' });
+          setIsEnrolled(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      toast({ title: 'Error', description: 'Failed to enroll. Please try again later.' });
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -122,15 +165,10 @@ export default function CoursePage() {
                   <p className="text-sm text-gray-600">Instructor</p>
                 </div>
               </div>
-              <div className="flex items-center mb-6">
-                <span className="text-yellow-500 mr-2">★</span>
-                <span className="font-semibold">{courseData.rating || 'N/A'}</span>
-                <span className="text-gray-600 ml-2">Students: {courseData.students || 'N/A'}</span>
-              </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setIsEnrolled(!isEnrolled)}
+                onClick={handleEnroll}
                 className={`w-full py-6 rounded-full font-semibold text-white ${
                   isEnrolled ? 'bg-green-600' : 'bg-purple-600'
                 }`}
@@ -159,7 +197,7 @@ export default function CoursePage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsEnrolled(!isEnrolled)}
+                  onClick={handleEnroll}
                   className={`w-full py-3 rounded-full font-semibold text-white ${
                     isEnrolled ? 'bg-green-600' : 'bg-purple-600'
                   }`}
@@ -174,5 +212,5 @@ export default function CoursePage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

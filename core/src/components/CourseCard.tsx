@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 interface CourseCardProps {
+  id: string
   title: string
   description: string
   price: number

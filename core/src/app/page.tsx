@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Spline from '@splinetool/react-spline';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SaleAlert from '../components/SaleAlert';
@@ -10,6 +11,7 @@ import { db } from '@/config/firebase';
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import Loader from '@/components/loader';
+import Demo from './demo/page';
 type Course = {
   id: string;
   title: string;
@@ -21,7 +23,7 @@ type Course = {
 
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [isLoading,setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function getCourses() {
@@ -32,18 +34,17 @@ export default function Home() {
           const data = doc.data();
           return {
             id: doc.id,
-            title: data.title || 'Untitled Course', // Fallback if title is missing
+            title: data.title || 'Untitled Course',
             description: data.description || 'No description available',
-            price: Number(data.price) || 0, // Ensure price is a number
-            discountedPrice: Number(data.discountedPrice || data.priceDiscount) || 0, // Handle `priceDiscount` fallback
-            ribbon: data.ribbon || undefined, // Optional ribbon field
+            price: Number(data.price) || 0,
+            discountedPrice: Number(data.discountedPrice || data.priceDiscount) || 0,
+            ribbon: data.ribbon || undefined,
           };
         });
         setCourses(fetchedCourses);
       } catch (error) {
         console.error('Error fetching courses:', error);
-      }
-      finally {
+      } finally {
         setIsLoading(false);
       }
     }
@@ -51,10 +52,8 @@ export default function Home() {
     getCourses();
   }, []);
   
-  if (isLoading){
-      return(
-        <Loader/>
-      )
+  if (isLoading) {
+    return <Loader />;
   }
 
   return (
@@ -62,8 +61,11 @@ export default function Home() {
       <SaleAlert />
       <Header />
       <main className="flex-grow bg-gray-100">
-        <section className="py-20 bg-gradient-to-b from-purple-600 to-indigo-600 text-white">
-          <div className="container mx-auto px-4 text-center">
+        <section className="relative py-20 bg-gradient-to-b from-purple-600 to-indigo-600 text-white overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <Demo />
+          </div>
+          <div className="container mx-auto px-4 text-center relative z-10">
             <motion.h1
               initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -103,7 +105,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course, index) => (
                 <motion.div
-                  key={course.id} // Fixed key usage
+                  key={course.id}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -130,3 +132,4 @@ export default function Home() {
     </div>
   );
 }
+
